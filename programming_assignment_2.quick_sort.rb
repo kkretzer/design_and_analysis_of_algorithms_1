@@ -29,17 +29,41 @@ end
 
 init_sort_range = (0..(file_array.length - 1))
 
-# always pick first element of subarray to be partitioned
+## PART 1
+## always pick first element of subarray to be partitioned
 #comps = sort_and_count_comparisons(file_array, init_sort_range.first, init_sort_range) do |sort_range, ary|
 #    sort_range.first
 #end
 
+## PART 2
+## always pick the last element of subarray to be partitioned
+#def pivot_on_last(sort_range, ary)
+#    ary[sort_range.first], ary[sort_range.last] = ary[sort_range.last], ary[sort_range.first]
+#    sort_range.first
+#end
+#
+#pivot = pivot_on_last(init_sort_range, file_array)
+#comps = sort_and_count_comparisons(file_array, pivot, init_sort_range) do |sort_range, ary|
+#    pivot_on_last(sort_range, ary)
+#end
 
-# always pick the last element of subarray to be partitioned
-file_array[0], file_array[file_array.length - 1] = file_array[file_array.length - 1], file_array[0]
-comps = sort_and_count_comparisons(file_array, init_sort_range.first, init_sort_range) do |sort_range, ary|
-    ary[sort_range.first], ary[sort_range.last] = ary[sort_range.last], ary[sort_range.first]
-    sort_range.first
+## PART 3
+# look at the first, middle, and last elements, take the "median of three", use as pivot
+def pivot_on_median_of_three(sort_range, ary)
+    fidx, midx, lidx = sort_range.first, sort_range.first + sort_range.count/2, sort_range.last
+    midx -= 1 if sort_range.count.even?
+    f, m, l = ary[fidx], ary[midx], ary[lidx]
+    median = fidx if f < [m,l].max and f > [m,l].min
+    median = midx if m < [f,l].max and m > [f,l].min
+    median = lidx if l < [m,f].max and l > [m,f].min
+    median = midx if median.nil? # fidx, midx, lidx are all the same element
+    ary[fidx], ary[median] = ary[median], ary[fidx]
+    fidx
+end
+
+pivot = pivot_on_median_of_three(init_sort_range, file_array)
+comps = sort_and_count_comparisons(file_array, pivot, init_sort_range) do |sort_range, ary|
+    pivot_on_median_of_three(sort_range, ary)
 end
 
 
