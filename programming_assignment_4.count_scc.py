@@ -22,24 +22,28 @@ def read_graph_file(input_file):
     return [forward_adjacency_lists, reversed_adjacency_lists, vertices]
 
 
-t = 0
-s = None
-f = defaultdict(int)
-leader = defaultdict(int)
-explored = set([])
-
 def strongly_connected_components(forward_graph, reverse_graph, vertices):
-    global t, s, f, leader, explored
     def dfs(graph, i):
-        global t, s, f, leader, explored
-
         explored.add(i)
+        # s is the leader for an SCC, it was the first of the SCC to be visited
+        # (only significant in the 2nd dfs-loop)
+        # 'leader' dictionary is just counting the # of vertices in each leader-group
         leader[s] += 1
         for j in graph[i]:
             if j not in explored:
                 dfs(graph, j)
-        t += 1
-        f[i] = t
+        t[0] += 1
+        f[i] = t[0]
+
+    # TODO: wtf?
+    #   t can't be 'closed over' if it's just an integer???
+    #   can't get the above closure to work unless t is some type of other object
+    #   odd that I don't need to do this to s, i *have* to be overlooking something with t
+    t = [0]
+    s = 0
+    f = defaultdict(int)
+    leader = defaultdict(int)
+    explored = set([])
 
     sorted_vertices = sorted(vertices, reverse=True)
     for i in sorted_vertices:
@@ -52,7 +56,7 @@ def strongly_connected_components(forward_graph, reverse_graph, vertices):
         neighbors = forward_graph[vertex]
         forward_graph_relabeled[f[vertex]] = [f[neighbor] for neighbor in neighbors]
 
-    t = 0
+    t = [0]
     s = None
     f = defaultdict(int)
     leader = defaultdict(int)
