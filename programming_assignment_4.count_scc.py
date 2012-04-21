@@ -25,12 +25,11 @@ def read_graph_file(input_file):
 t = 0
 s = None
 f = defaultdict(int)
-first_f = defaultdict(int)
 leader = defaultdict(int)
 explored = set([])
 
 def strongly_connected_components(forward_graph, reverse_graph, vertices):
-    global t, s, f, leader, explored, first_f
+    global t, s, f, leader, explored
     def dfs(graph, i):
         global t, s, f, leader, explored
 
@@ -52,8 +51,6 @@ def strongly_connected_components(forward_graph, reverse_graph, vertices):
     for vertex in forward_graph:
         neighbors = forward_graph[vertex]
         forward_graph_relabeled[f[vertex]] = [f[neighbor] for neighbor in neighbors]
-    for k in f:
-        first_f[k] = f[k]
 
     t = 0
     s = None
