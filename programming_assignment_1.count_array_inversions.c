@@ -7,9 +7,12 @@
 int main(int argc, char **argv)
 {
     FILE *int_array_file, *mergeresult;
-    long *int_array, inversions;
+    long *int_array;
     char line[MAXLINE];
-    int num_elem, i;
+    size_t num_elem, inversions;
+    int i;
+    int longcmp(const void *, const void *);
+    void readdata(long *, FILE *);
 
     if (argc != 2) {
         printf("usage: %s %s\n", *argv, "<file of integers to sort>");
@@ -23,7 +26,7 @@ int main(int argc, char **argv)
     readdata(int_array, int_array_file);
     fclose(int_array_file);
 
-    inversions = mymergesort(int_array, num_elem);
+    inversions = mymergesort((void *) int_array, num_elem, sizeof(long), &longcmp);
     printf("%ld inversions\n", inversions);
     mergeresult = fopen("IntegerArray.txt.result", "w");
     for (i = 0; i < num_elem; ++i) {
@@ -35,9 +38,25 @@ int main(int argc, char **argv)
     exit(0);
 }
 
+int longcmp(const void *left, const void *right)
+{
+    long l = *((long *)left);
+    long r = *((long *)right);
+    if (l < r) {
+        return -1;
+    } else if (l == r) {
+
+            printf("huzzah l=%ld r=%ld\n", l, r);
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
 int linecount(FILE *int_array_file)
 {
     char line[MAXLINE];
+    int line_count;
     for (line_count = 0; fgets(line, MAXLINE, int_array_file) != NULL; line_count++) { }
     fseek(int_array_file, 0L, SEEK_SET);
     return line_count;

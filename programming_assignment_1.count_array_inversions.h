@@ -1,54 +1,74 @@
 #include <stdlib.h>
 #include <string.h>
 
-static long merge(long *, long, long, long *);
+static size_t merge(char *, size_t, size_t, size_t, int (*compar)(const void *, const void *));
 
-long mymergesort(long *int_array, long num_elem)
+size_t mymergesort(void *input_array, size_t num_elem, size_t elem_width, int (*compar)(const void *, const void *))
 {
-    long l_num_elem, r_num_elem, temp;
-    long *copy, inversions = 0;
+    size_t l_num_elem, r_num_elem, inversions = 0;
 
-    if (num_elem <= 1) {
-        return 0;
+    if (num_elem > 1) {
+        l_num_elem = num_elem / 2;
+        r_num_elem = num_elem - l_num_elem;
+
+        inversions += mymergesort(input_array, l_num_elem, elem_width, compar);
+        inversions += mymergesort(input_array + (l_num_elem * elem_width), r_num_elem, elem_width, compar);
+        inversions += merge((char *) input_array, l_num_elem, r_num_elem, elem_width, compar);
     }
-
-    copy = (long *) malloc(num_elem * sizeof(long));
-    memcpy((void *)copy, (void *)int_array, num_elem * sizeof(long));
-
-    l_num_elem = num_elem / 2;
-    r_num_elem = num_elem - l_num_elem;
-    inversions += mymergesort(copy, l_num_elem);
-    inversions += mymergesort(copy + l_num_elem, r_num_elem);
-
-    inversions += merge(copy, l_num_elem, r_num_elem, int_array);
-
-    free(copy);
     return inversions;
 }
 
-static long merge(long *to_merge, long l_num_elem, long r_num_elem, long *merged)
+static size_t merge(char *to_merge, size_t l_num_elem, size_t r_num_elem, size_t elem_width, int (*compar)(const void *, const void *))
 {
-    long *l_iter, *r_iter, *l_end, *r_end, inversions;
+    char *l_iter, *r_iter, *l_end, *r_end, *temp, *temp_holder;
+    size_t inversions;
+    int compar_result, i;
     l_iter = to_merge;
-    r_iter = l_end = to_merge + l_num_elem;
-    r_end = to_merge + l_num_elem + r_num_elem;
+    r_iter = l_end = to_merge + (l_num_elem * elem_width);
+    r_end = to_merge + (l_num_elem + r_num_elem)*elem_width;
     inversions = 0;
+    temp = (char *) malloc((l_num_elem + r_num_elem) * elem_width);
+    temp_holder = temp;
 
     while (l_iter < l_end && r_iter < r_end) {
-        if (*l_iter < *r_iter) {
-            *merged++ = *l_iter++;
-        } else if (*l_iter > *r_iter) {
-            *merged++ = *r_iter++;
-            inversions += l_end - l_iter;
+        compar_result = (*compar)(l_iter, r_iter);
+        if (compar_result < 0) {
+            for (i=0; i<elem_width; ++i) {
+                *temp = *l_iter;
+                ++temp;
+                ++l_iter;
+            }
+        } else if (compar_result > 0) {
+            for (i=0; i<elem_width; ++i) {
+                *temp = *r_iter;
+                ++temp;
+                ++r_iter;
+            }
+            inversions += ((l_end - l_iter)/elem_width);
         } else {
-            *merged++ = *l_iter++;
-            *merged++ = *r_iter++;
+            for (i=0; i<elem_width; ++i) {
+                *temp = *l_iter;
+                ++temp;
+                ++l_iter;
+            }
+            for (i=0; i<elem_width; ++i) {
+                *temp = *r_iter;
+                ++temp;
+                ++r_iter;
+            }
         }
     }
-    if (l_iter < l_end) {
-        memcpy((void *)merged, (void *)l_iter, (l_end - l_iter) * sizeof(long));
-    } else if (r_iter < r_end) {
-        memcpy((void *)merged, (void *)r_iter, (r_end - r_iter) * sizeof(long));
+    while (l_iter < l_end) {
+        *temp = *l_iter;
+        ++temp;
+        ++l_iter;
     }
+    while (r_iter < r_end) {
+        *temp = *r_iter;
+        ++temp;
+        ++r_iter;
+    }
+    memcpy(to_merge, temp_holder, (l_num_elem+r_num_elem)*elem_width);
+    free(temp_holder);
     return inversions;
 }
