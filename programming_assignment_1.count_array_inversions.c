@@ -12,6 +12,8 @@ int main(int argc, char **argv)
     size_t num_elem, inversions;
     int i;
     int longcmp(const void *, const void *);
+    int rlongcmp(const void *, const void *);
+    int doublecmp(const void *, const void *);
     void readdata(long *, FILE *);
 
     if (argc != 2) {
@@ -38,6 +40,24 @@ int main(int argc, char **argv)
     exit(0);
 }
 
+int doublecmp(const void *left, const void *right)
+{
+    long l = *((long *)left);
+    long r = *((long *)right);
+    if (l < r) {
+        return -1;
+    } else if (l == r) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+int rlongcmp(const void *left, const void *right)
+{
+    return -longcmp(left, right);
+}
+
 int longcmp(const void *left, const void *right)
 {
     long l = *((long *)left);
@@ -45,8 +65,6 @@ int longcmp(const void *left, const void *right)
     if (l < r) {
         return -1;
     } else if (l == r) {
-
-            printf("huzzah l=%ld r=%ld\n", l, r);
         return 0;
     } else {
         return 1;
